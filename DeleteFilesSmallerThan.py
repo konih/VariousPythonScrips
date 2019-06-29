@@ -11,4 +11,4 @@ for root, _, files in os.walk("F:/"):
                 print fullpath
                 os.remove(fullpath)
         except WindowsError:
-            print "Error" + fullpath
+            print("Error" + fullpath)

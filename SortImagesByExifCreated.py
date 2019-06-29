@@ -1,16 +1,16 @@
 import datetime
 import imghdr
-import os, os.path
-import os, time, shutil, sys
+import os
+import time
 from typing import Optional
 
-import exifread
+import PIL.Image
 
-from exif import Image
+from HelperFunctions import move_to_dir
 
 MAX_FILE_SIZE = 1024  # KB
 PATH = 'F:/NotSorted/'
-EXIFPATH = 'F:/Sortierbar/'
+EXIFPATH = 'F:/Sortiert/'
 NOEXIFPATH = 'F:/Unsortierbar/'
 ERRORPATH = 'F:/Fehlerhaft/'
 
@@ -18,19 +18,19 @@ ERRORPATH = 'F:/Fehlerhaft/'
 def try_get_exifdate(fullpath: str) -> Optional[str]:
     with open(fullpath, 'rb') as image_file:
         try:
-            tags = exifread.process_file(image_file)
-            for tag in tags.keys():
-                if str(tag).find('DateTimeOriginal') > 0:
-                    return tags[tag]
+            created: Optional[str] = None
+            img = PIL.Image.open(fullpath)
+            exif_data = img._getexif()
+            if (exif_data):
+                if 0x9003 in exif_data:  # CreatedDateTime
+                    created = exif_data[0x0132]
+                elif 0x9004 in exif_data:  # DateTimeDigitized
+                    created = exif_data[0x0132]
+                elif 0x0132 in exif_data:  # DateTime
+                    created = exif_data[0x0132]
+            return created
         except:
             return None
-
-
-def move_to_dir(fullpath: str, dest: str):
-    if not os.path.isdir(dest):
-        os.mkdir(dest)
-    print('Moving from %s to %s' % (fullpath, dest))
-    os.rename(fullpath, os.path.join(dest, os.path.basename(fullpath)))
 
 
 numfiles = 0
